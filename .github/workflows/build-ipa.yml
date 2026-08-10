@@ -6,11 +6,16 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths:
-      - "Sources/**"
-      - "Resources/**"
-      - "project.yml"
-      - ".github/workflows/build-ipa.yml"
+    # 打 v* 标签也要跑——否则下面那个「仅打 tag 时发 Release」的步骤
+    # 永远等不到机会执行（tag push 压根不触发这个 workflow）。
+    tags: ["v*"]
+    # 不加 paths 过滤：这个仓里只有壳，每次 push 都是该重新打包的改动。
+    # 而且 paths 跟 tags 混用有坑——tag 指向的 commit 通常已经在 main 上，
+    # 算不出"改了哪些文件"，反而会让 tag 触发失效。
+
+# 新仓的 GITHUB_TOKEN 默认只读，发 Release 会 403。
+permissions:
+  contents: write
 
 jobs:
   build:
