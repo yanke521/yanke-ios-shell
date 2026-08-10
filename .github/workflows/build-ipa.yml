@@ -1,0 +1,73 @@
+name: 打包 IPA
+
+# 手动点一下就构建（Actions 页面右上角 "Run workflow"）。
+# 顺带在改了壳代码时自动跑一次——前端改动不需要重新打包，所以只盯这个目录。
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "Sources/**"
+      - "Resources/**"
+      - "project.yml"
+      - ".github/workflows/build-ipa.yml"
+
+jobs:
+  build:
+    # macOS runner 对公开仓库免费；私有仓按 10x 计费（Free 档 2000 分钟/月
+    # ≈ 200 macOS 分钟，一次构建 3~5 分钟，够用几十次）。
+    # 想换更新的镜像把这行改成 macos-26 即可。
+    runs-on: macos-15
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 装 XcodeGen
+        run: brew install xcodegen
+
+      - name: 生成 Xcode 工程
+        run: xcodegen generate
+
+      - name: 编译（不签名）
+        # 全能签会重签，所以这里必须把签名整套关掉。
+        # 少关一个 xcodebuild 就会去找 provisioning profile，然后报
+        # "requires a development team" 直接失败。
+        run: |
+          xcodebuild \
+            -project YanKe.xcodeproj \
+            -scheme YanKe \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_ENTITLEMENTS="" \
+            build
+
+      - name: 装进 Payload 打成 .ipa
+        # .ipa 本质就是个 zip，里面一个 Payload/ 目录装着 .app。
+        run: |
+          APP="build/Build/Products/Release-iphoneos/YanKe.app"
+          test -d "$APP" || { echo "没找到 $APP"; ls -R build/Build/Products; exit 1; }
+          mkdir -p Payload
+          cp -R "$APP" Payload/
+          zip -qry YanKe-unsigned.ipa Payload
+          echo "产物大小：$(du -h YanKe-unsigned.ipa | cut -f1)"
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: YanKe-unsigned-ipa
+          path: YanKe-unsigned.ipa
+          retention-days: 30
+
+      # 打了 tag 就顺手发个 Release —— 公开仓的 Release 附件是直链，
+      # 全能签可以直接填 URL 装，不用先下到手机上。
+      - name: 发 Release（仅打 tag 时）
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: YanKe-unsigned.ipa

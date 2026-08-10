@@ -1,0 +1,46 @@
+# XcodeGen 工程描述。
+#
+# 为什么不直接提交 .xcodeproj：那玩意儿是个几百行的 pbxproj，手写容易写错、
+# 改一个设置要动十几处、而且冲突起来没法看。这份 yml 在 CI 上一条
+# `xcodegen generate` 就还原成完整工程，可读也可改。
+#
+# 本地要改的话：brew install xcodegen && xcodegen generate && open YanKe.xcodeproj
+
+name: YanKe
+options:
+  bundleIdPrefix: xyz.yanke521
+  deploymentTarget:
+    iOS: "16.0"     # WKWebView.themeColor 要 15+，underPageBackgroundColor 要 15+；
+                    # 16 是个安全的下限，比这更老的机器她也没有
+  createIntermediateGroups: true
+
+settings:
+  base:
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    SWIFT_VERSION: "5.0"
+    TARGETED_DEVICE_FAMILY: "1"          # 只做 iPhone
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    # 无签名构建：CI 上没有证书，全能签会重签，这里必须全关掉，
+    # 否则 xcodebuild 会去找 provisioning profile 然后失败
+    CODE_SIGN_IDENTITY: ""
+    CODE_SIGNING_REQUIRED: NO
+    CODE_SIGNING_ALLOWED: NO
+    CODE_SIGN_ENTITLEMENTS: ""
+
+targets:
+  YanKe:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        excludes:
+          - "Info.plist"          # 由 INFOPLIST_FILE 指定，别再当资源打一份进去
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: xyz.yanke521.app
+        PRODUCT_NAME: YanKe
+        INFOPLIST_FILE: Resources/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: NO
