@@ -176,6 +176,13 @@ extension WebViewController: WKNavigationDelegate {
         show(error)
     }
 
+    /// WebKit 的渲染进程被系统回收了（后台挂久了 + 内存紧张时很常见）。
+    /// 这时 webView.url 还在、内容已经没了——不接这个回调，切回来就是一片白，
+    /// 而且怎么点都不动。必须主动重载。
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        loadHome()
+    }
+
     private func show(_ error: Error) {
         // -999 是被新的导航取代，不是真失败，弹出来反而莫名其妙
         if (error as NSError).code == NSURLErrorCancelled { return }
