@@ -32,15 +32,20 @@ final class WebViewController: UIViewController {
         config.allowsInlineMediaPlayback = true
         config.mediaTypesRequiringUserActionForPlayback = []
 
-        // 让前端能认出自己跑在壳里（想针对性调样式的时候用得上，现在没用也留着）
+        // 版本号从 Info.plist 现读，**别再写死**：v1.1 那次写死成 "1.0"，结果装完
+        // 没有任何办法从 app 里看出装的是哪一版（网页只拿得到 __YANKE_NATIVE__ 和 UA，
+        // 两个都跟版本无关），只能去「设置 → iPhone 储存空间」翻。
+        let ver = (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "?"
+
+        // 让前端能认出自己跑在壳里，并且知道是哪一版（/geo 探针会把它报出来）
         let flag = WKUserScript(
-            source: "window.__YANKE_NATIVE__ = true;",
+            source: "window.__YANKE_NATIVE__ = true; window.__YANKE_SHELL_VER__ = '\(ver)';",
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true)
         config.userContentController.addUserScript(flag)
 
         // UA 尾巴加个标识，服务端想区分来源时不用猜（系统 UA 其余部分保留）
-        config.applicationNameForUserAgent = "YanKeApp/1.0"
+        config.applicationNameForUserAgent = "YanKeApp/\(ver)"
 
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
