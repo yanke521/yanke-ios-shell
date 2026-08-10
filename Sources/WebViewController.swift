@@ -121,15 +121,18 @@ final class WebViewController: UIViewController {
     private func observeThemeColor() {
         themeObservation = webView.observe(\.themeColor, options: [.new]) {
             [weak self] webView, _ in
-            guard let self else { return }
-            let color = webView.themeColor ?? webView.underPageBackgroundColor
-            if let color {
-                self.webView.underPageBackgroundColor = color
-                self.view.backgroundColor = color
-                self.statusBarStyle = color.isDark ? .lightContent : .darkContent
-                self.setNeedsStatusBarAppearanceUpdate()
-            }
+            self?.applyThemeColor(webView.themeColor)
         }
+    }
+
+    private func applyThemeColor(_ color: UIColor?) {
+        guard let color else { return }
+        webView.underPageBackgroundColor = color   // 回弹露出来的那块跟着走
+        view.backgroundColor = color
+        let style: UIStatusBarStyle = color.isDark ? .lightContent : .darkContent
+        guard style != statusBarStyle else { return }
+        statusBarStyle = style
+        setNeedsStatusBarAppearanceUpdate()
     }
 }
 
@@ -157,6 +160,10 @@ extension WebViewController: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         errorView.isHidden = true
+        // KVO 负责「她在 app 里切主题」那种没有导航的变化；这一下负责首屏。
+        // 两条都留着：只靠 KVO 的话，万一它对 themeColor 不触发，
+        // 首屏状态栏就一直是错的，而这种错很难一眼看出来是哪儿的问题。
+        applyThemeColor(webView.themeColor)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!,
