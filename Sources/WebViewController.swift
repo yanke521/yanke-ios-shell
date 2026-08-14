@@ -196,13 +196,12 @@ extension WebViewController: WKNavigationDelegate {
     }
 }
 
-// MARK: - window.open / 新窗口
+// MARK: - window.open / JS 弹窗
 
 extension WebViewController: WKUIDelegate {
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
-        // target=_blank 没有新窗口可开，就地导航；外链会被上面那道策略拦去 Safari
         if navigationAction.targetFrame == nil, let url = navigationAction.request.url {
             if url.host == Self.homeURL.host {
                 webView.load(navigationAction.request)
@@ -211,6 +210,39 @@ extension WebViewController: WKUIDelegate {
             }
         }
         return nil
+    }
+
+    func webView(_ webView: WKWebView,
+                 runJavaScriptAlertPanelWithMessage message: String,
+                 initiatedByFrame frame: WKFrameInfo,
+                 completionHandler: @escaping () -> Void) {
+        let ac = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "好", style: .default) { _ in completionHandler() })
+        present(ac, animated: true)
+    }
+
+    func webView(_ webView: WKWebView,
+                 runJavaScriptConfirmPanelWithMessage message: String,
+                 initiatedByFrame frame: WKFrameInfo,
+                 completionHandler: @escaping (Bool) -> Void) {
+        let ac = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+        ac.addAction(UIAlertAction(title: "取消", style: .cancel) { _ in completionHandler(false) })
+        ac.addAction(UIAlertAction(title: "确定", style: .default) { _ in completionHandler(true) })
+        present(ac, animated: true)
+    }
+
+    func webView(_ webView: WKWebView,
+                 runJavaScriptTextInputPanelWithPrompt prompt: String,
+                 defaultText: String?,
+                 initiatedByFrame frame: WKFrameInfo,
+                 completionHandler: @escaping (String?) -> Void) {
+        let ac = UIAlertController(title: nil, message: prompt, preferredStyle: .alert)
+        ac.addTextField { $0.text = defaultText }
+        ac.addAction(UIAlertAction(title: "取消", style: .cancel) { _ in completionHandler(nil) })
+        ac.addAction(UIAlertAction(title: "确定", style: .default) { _ in
+            completionHandler(ac.textFields?.first?.text)
+        })
+        present(ac, animated: true)
     }
 }
 
