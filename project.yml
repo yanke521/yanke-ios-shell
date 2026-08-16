@@ -16,8 +16,12 @@ options:
 
 settings:
   base:
-    MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    # 这两个要跟 tag 一起往上抬。版本号会进 UA（YanKeApp/x.y）和
+    # window.__YANKE_SHELL_VER__ —— 一直写死 1.0 的话，服务端日志里
+    # 分不出她手机上装的到底是哪一版（排"弹窗点了没反应"那次就卡在这儿：
+    # v1.1 的包报出来也是 1.0）。
+    MARKETING_VERSION: "1.2"
+    CURRENT_PROJECT_VERSION: "3"
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1"          # 只做 iPhone
     ENABLE_USER_SCRIPT_SANDBOXING: YES
