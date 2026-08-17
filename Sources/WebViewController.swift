@@ -26,7 +26,16 @@ final class WebViewController: UIViewController {
 
         // 默认就是持久化的，但写明白：她的头像、主题、bgSettings 全在 localStorage 里，
         // 换成 nonPersistent 每次冷启动都会白给。
+        // ⚠ 也是下面 app-bound 的前提：非持久化 store 里 Service Worker 一样不给用。
         config.websiteDataStore = .default()
+
+        // ★ 打开 Service Worker（2026-08-17）。
+        // WKWebView 默认不提供 SW API，所以 index.html 里那句 register('/sw.js')
+        // 在壳里从来没成功过 —— 这就是她说的「退出重进要重新加载、还没 PWA 快」：
+        // 壳这边每次冷启动都是零缓存，1190KB 全走网络；PWA 那边有 SW 兜着。
+        // 配对使用：Info.plist 的 WKAppBoundDomains 列域名，这里把导航锁在那些域上。
+        // 只设一个不生效，且不会有任何报错 —— 它是静默失效的。
+        config.limitsNavigationsToAppBoundDomains = true
 
         // TTS 语音、贴纸动图要能自动播，不然每次都得点一下
         config.allowsInlineMediaPlayback = true
@@ -104,10 +113,14 @@ final class WebViewController: UIViewController {
 
     private func loadHome() {
         errorView.isHidden = true
-        // 用 reloadIgnoringLocalCacheData 语义：她改完前端刷新即生效，
-        // 壳这边别把旧 index.html 缓存住，否则会出现"改了没变"的灵异事件。
+        // 2026-08-17 改回 .useProtocolCachePolicy。
+        // 原来写 .reloadRevalidatingCacheData 是为了「她改完前端刷新即生效」，
+        // 但那等于每次冷启动都强制回源验一遍首页，而且**这条 cachePolicy 会一路
+        // 盖到子资源上**，跟 SW 的 cache-first 打架（SW 装上了照样每个文件一次往返）。
+        // index.html 本来就是 nginx 那侧 no-cache + ETag，协议缓存自己会 304，
+        // 「改完即生效」不受影响；静态资源交给 sw.js 管。
         var req = URLRequest(url: Self.homeURL)
-        req.cachePolicy = .reloadRevalidatingCacheData
+        req.cachePolicy = .useProtocolCachePolicy
         webView.load(req)
     }
 
