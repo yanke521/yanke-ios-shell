@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import Network
 
 /// 言克 app 的原生壳。
 ///
@@ -18,6 +19,8 @@ final class WebViewController: UIViewController {
     private var themeObservation: NSKeyValueObservation?
     private var statusBarStyle: UIStatusBarStyle = .darkContent
     private lazy var errorView = ErrorView { [weak self] in self?.loadHome() }
+    private let netMonitor = NWPathMonitor()
+    private let netQueue = DispatchQueue(label: "xyz.yanke521.net")
 
     // MARK: - 生命周期
 
@@ -59,6 +62,12 @@ final class WebViewController: UIViewController {
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         webView.uiDelegate = self
+        /* Safari 开发者工具能连上这个壳（iOS 16.4+）。
+           留着它是因为：她那侧出的毛病（图片白、长按没菜单这类）在服务器上**怎么量都量不出来**
+           ——壳的环境只有她手上那一台。关着的话，唯一的排查手段就是我猜、她试。
+           只对连着线且信任的电脑开放，不是网页能自己打开的东西。 */
+        if #available(iOS 16.4, *) { webView.isInspectable = true }
+
         /* ⚠ 必须是 true，别再关回去。这一个开关管的不只是链接预览——**长按图片的
            系统菜单（存储图像／拷贝／分享）也归它**，关掉之后壳里长按图片什么都不弹
            （2026-09-21 言言：「套壳app长按就不弹保存」）。PWA 和浏览器那边一直是好的，
@@ -108,9 +117,29 @@ final class WebViewController: UIViewController {
         super.viewDidLoad()
         observeThemeColor()
         loadHome()
+        startNetworkWatch()
         NotificationCenter.default.addObserver(
             self, selector: #selector(appDidBecomeActive),
             name: UIApplication.didBecomeActiveNotification, object: nil)
+    }
+
+    /// 信号回来了自己重连，不用她去点那颗「重试」。
+    ///
+    /// 她报过一次「app 老是打不开」，查到最后根因是**手机当时没信号**
+    /// （记忆 project-listen-backlog-app-unreachable）。那种情况下壳停在错误页上，
+    /// 就算网络几秒后恢复了，页面也还是那张——得她自己想起来点一下。
+    ///
+    /// ⚠ 只在**当前正卡在错误页**时才重载。不看这个条件的话，通勤路上 Wi-Fi/蜂窝
+    /// 来回切一次就刷一次页面，正打着的字全没了。
+    private func startNetworkWatch() {
+        netMonitor.pathUpdateHandler = { [weak self] path in
+            guard path.status == .satisfied else { return }
+            DispatchQueue.main.async {
+                guard let self = self, !self.errorView.isHidden else { return }
+                self.loadHome()
+            }
+        }
+        netMonitor.start(queue: netQueue)
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle { statusBarStyle }

@@ -20,8 +20,13 @@ settings:
     # window.__YANKE_SHELL_VER__ —— 一直写死 1.0 的话，服务端日志里
     # 分不出她手机上装的到底是哪一版（排"弹窗点了没反应"那次就卡在这儿：
     # v1.1 的包报出来也是 1.0）。
-    MARKETING_VERSION: "1.3"
-    CURRENT_PROJECT_VERSION: "4"
+    #
+    # ⚠ 2026-09-21：这两行**曾经是空转的**。Info.plist 是手写的（GENERATE_INFOPLIST_FILE: NO），
+    #   里面直接写死了版本号，跟这儿毫无关系——改这边一点用都没有，得两个文件各改一遍。
+    #   v1.4 就是这么漏的（tag 打了 v1.4，装上去报 1.3）。现在 Info.plist 换成了
+    #   $(MARKETING_VERSION) / $(CURRENT_PROJECT_VERSION) 占位符，**这儿才是唯一真相**。
+    MARKETING_VERSION: "1.5"
+    CURRENT_PROJECT_VERSION: "5"
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1"          # 只做 iPhone
     ENABLE_USER_SCRIPT_SANDBOXING: YES
