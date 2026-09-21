@@ -1,0 +1,37 @@
+{
+  "name": "言克",
+  "identifier": "xyz.yanke521.source",
+  "subtitle": "言克 iOS 壳",
+  "description": "言克 app 的 WKWebView 原生壳。无签名包，需自行签名安装。",
+  "iconURL": "https://raw.githubusercontent.com/yanke521/yanke-ios-shell/main/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png",
+  "website": "https://github.com/yanke521/yanke-ios-shell",
+  "sourceURL": "https://raw.githubusercontent.com/yanke521/yanke-ios-shell/main/appstore.json",
+  "apps": [
+    {
+      "name": "言克",
+      "bundleIdentifier": "xyz.yanke521.app",
+      "developerName": "yanke521",
+      "subtitle": "言克",
+      "localizedDescription": "言克 app 的原生壳。\n\nv1.5：长按图片可以存图／静音键拨上也能朗读／断网恢复后自动重连／可用 Safari 开发者工具调试。",
+      "iconURL": "https://raw.githubusercontent.com/yanke521/yanke-ios-shell/main/Resources/Assets.xcassets/AppIcon.appiconset/icon-1024.png",
+      "tintColor": "B8A088",
+      "category": "lifestyle",
+      "screenshotURLs": [],
+      "version": "1.5",
+      "versionDate": "2026-09-21T04:50:48Z",
+      "versionDescription": "长按图片可以存图／静音键拨上也能朗读／断网恢复后自动重连。",
+      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v1.5/YanKe-unsigned.ipa",
+      "size": 2452684,
+      "versions": [
+        {
+          "version": "1.5",
+          "date": "2026-09-21T04:50:48Z",
+          "localizedDescription": "长按图片可以存图／静音键拨上也能朗读／断网恢复后自动重连／可用 Safari 开发者工具调试。",
+          "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v1.5/YanKe-unsigned.ipa",
+          "size": 2452684
+        }
+      ]
+    }
+  ],
+  "news": []
+}
