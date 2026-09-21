@@ -59,7 +59,13 @@ final class WebViewController: UIViewController {
         webView = WKWebView(frame: .zero, configuration: config)
         webView.navigationDelegate = self
         webView.uiDelegate = self
-        webView.allowsLinkPreview = false
+        /* ⚠ 必须是 true，别再关回去。这一个开关管的不只是链接预览——**长按图片的
+           系统菜单（存储图像／拷贝／分享）也归它**，关掉之后壳里长按图片什么都不弹
+           （2026-09-21 言言：「套壳app长按就不弹保存」）。PWA 和浏览器那边一直是好的，
+           所以这是壳独有的毛病，查网页那侧永远查不出来。
+           不用担心它会抢掉聊天气泡的长按菜单：`.msg` 那串带着 -webkit-touch-callout:none，
+           气泡照旧走前端自己那套；图片没设，正好交给系统。 */
+        webView.allowsLinkPreview = true
 
         // 侧滑返回关掉：这是个 SPA，浏览器历史跟她的 tab 不是一回事，
         // 侧滑很容易一下退到空白页。她自己那套横滑手势不受影响。
@@ -117,8 +123,11 @@ final class WebViewController: UIViewController {
         // 原来写 .reloadRevalidatingCacheData 是为了「她改完前端刷新即生效」，
         // 但那等于每次冷启动都强制回源验一遍首页，而且**这条 cachePolicy 会一路
         // 盖到子资源上**，跟 SW 的 cache-first 打架（SW 装上了照样每个文件一次往返）。
-        // index.html 本来就是 nginx 那侧 no-cache + ETag，协议缓存自己会 304，
-        // 「改完即生效」不受影响；静态资源交给 sw.js 管。
+        // index.html 归 server.py 的 `_get_index` 发，带 ETag + Last-Modified + no-cache，
+        // 协议缓存自己会 304，「改完即生效」不受影响；静态资源交给 sw.js 管。
+        // ⚠ 2026-08-24 订正：这条注释原来写着"本来就是 no-cache + ETag"——**是错的**。
+        // 当时实际发的是 `no-store` 且一个 ETag 都没有，等于"连存都不许存"，
+        // 所以从打壳起每次冷启动都在全量重下 884KB，一次 304 都没命中过。已修。
         var req = URLRequest(url: Self.homeURL)
         req.cachePolicy = .useProtocolCachePolicy
         webView.load(req)
