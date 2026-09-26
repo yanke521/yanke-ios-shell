@@ -341,6 +341,17 @@ extension WebViewController: WKNavigationDelegate {
 // MARK: - window.open / JS 弹窗
 
 extension WebViewController: WKUIDelegate {
+    // 麦克风 / 相机（2026-09-26 v1.8，语音消息）：网页调 getUserMedia 时，WKWebView 默认
+    // **每次启动**都再弹一次网页级授权——系统级那次（Info.plist 的 NSMicrophoneUsageDescription）
+    // 只问一次，这一层是另外的。自家域名直接放行，外站照旧问。
+    func webView(_ webView: WKWebView,
+                 requestMediaCapturePermissionFor origin: WKSecurityOrigin,
+                 initiatedByFrame frame: WKFrameInfo,
+                 type: WKMediaCaptureType,
+                 decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+        decisionHandler(origin.host == Self.homeURL.host ? .grant : .prompt)
+    }
+
     func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
                  for navigationAction: WKNavigationAction,
                  windowFeatures: WKWindowFeatures) -> WKWebView? {
