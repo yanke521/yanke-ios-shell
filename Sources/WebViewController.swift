@@ -16,6 +16,8 @@ final class WebViewController: UIViewController {
     private static let homeURL = URL(string: "https://yanke521.xyz")!
 
     private var webView: WKWebView!
+    /// 只在网页是旧版（没有 __ykKb）时才用：退回「原生把 WebView 缩到键盘上沿」。
+    private var webBottom: NSLayoutConstraint!
     private var themeObservation: NSKeyValueObservation?
     private var statusBarStyle: UIStatusBarStyle = .darkContent
     private lazy var errorView = ErrorView { [weak self] in self?.loadHome() }
@@ -97,9 +99,10 @@ final class WebViewController: UIViewController {
         // 铺满整个 window，**不避让安全区**——这正是要的效果
         webView.translatesAutoresizingMaskIntoConstraints = false
         errorView.translatesAutoresizingMaskIntoConstraints = false
+        webBottom = webView.bottomAnchor.constraint(equalTo: root.bottomAnchor)
         NSLayoutConstraint.activate([
             webView.topAnchor.constraint(equalTo: root.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: root.bottomAnchor),
+            webBottom,
             webView.leadingAnchor.constraint(equalTo: root.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: root.trailingAnchor),
 
@@ -116,6 +119,7 @@ final class WebViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         observeThemeColor()
+        takeOverKeyboard()
         loadHome()
         startNetworkWatch()
         NotificationCenter.default.addObserver(
@@ -143,6 +147,74 @@ final class WebViewController: UIViewController {
     }
 
     override var preferredStatusBarStyle: UIStatusBarStyle { statusBarStyle }
+
+    // MARK: - 键盘（v1.6）
+
+    /// 键盘由网页自己跟着走，WKWebView 那套摘掉。
+    ///
+    /// 2026-09-26 言言：「输入框跟键盘弹起做的不丝滑」。原来是 WKWebView 自己管键盘：
+    /// 键盘一弹它先把**整页往上顶**好露出输入框，等键盘动画走完网页才收到 resize、
+    /// 重排、再把页面滚回来——整页一窜、跳一下、归位，三下都不跟键盘同步。
+    /// 网页那侧怎么改都够不着：它拿到消息的时候键盘已经弹完了。
+    ///
+    /// 做法照 Ionic 的 Capacitor Keyboard 插件：把 WKWebView 自己的键盘监听摘掉
+    /// （它就不会再顶页面），改成**键盘刚要动**那一刻把「高度 + 动画时长」递给网页，
+    /// 网页用同一段时长让输入框跟着走（index.html 里的 `__ykKb`）。
+    ///
+    /// ⚠ 摘掉之后，别的页面里被键盘挡住的输入框 WebKit 也不会替我们滚出来了——
+    ///   那一段网页自己补了（`_kbReveal`）。
+    /// ⚠ 网页是旧版、没有 `__ykKb` 的话，退回原生把 WebView 缩到键盘上沿，
+    ///   不会出现键盘把输入框盖死还没法打字的情况。
+    private func takeOverKeyboard() {
+        let nc = NotificationCenter.default
+        for name in [UIResponder.keyboardWillShowNotification,
+                     UIResponder.keyboardDidShowNotification,
+                     UIResponder.keyboardWillHideNotification,
+                     UIResponder.keyboardDidHideNotification,
+                     UIResponder.keyboardWillChangeFrameNotification,
+                     UIResponder.keyboardDidChangeFrameNotification] {
+            nc.removeObserver(webView!, name: name, object: nil)
+        }
+        nc.addObserver(self, selector: #selector(keyboardWillChangeFrame(_:)),
+                       name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
+    }
+
+    @objc private func keyboardWillChangeFrame(_ note: Notification) {
+        guard let info = note.userInfo,
+              let endScreen = (info[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
+        else { return }
+        let duration = (info[UIResponder.keyboardAnimationDurationUserInfoKey] as? Double) ?? 0.25
+        let curveRaw = (info[UIResponder.keyboardAnimationCurveUserInfoKey] as? Int) ?? 7
+
+        // 键盘帧是屏幕坐标，换成本 view 的再算盖住了底下多少。收起时它在屏幕外 → 0。
+        let end: CGRect
+        if let screen = view.window?.screen {
+            end = view.convert(endScreen, from: screen.coordinateSpace)
+        } else {
+            end = view.convert(endScreen, from: nil)
+        }
+        let height = max(0, view.bounds.maxY - end.minY)
+        let ms = Int((duration * 1000).rounded())
+
+        let js = "typeof window.__ykKb==='function'?(window.__ykKb(\(Int(height.rounded())),\(ms)),1):0"
+        webView.evaluateJavaScript(js) { [weak self] result, _ in
+            if (result as? Int) == 1 {
+                // 网页接住了；万一之前走过兜底，把 WebView 放回全屏
+                if self?.webBottom.constant != 0 { self?.webBottom.constant = 0 }
+                return
+            }
+            self?.nativeResize(height, duration: duration, curveRaw: curveRaw)
+        }
+    }
+
+    /// 兜底：网页不认得 __ykKb（旧缓存 / 加载失败页），就原生缩 WebView。
+    private func nativeResize(_ height: CGFloat, duration: Double, curveRaw: Int) {
+        webBottom.constant = -height
+        let opts = UIView.AnimationOptions(rawValue: UInt(curveRaw) << 16)
+        UIView.animate(withDuration: duration, delay: 0, options: [opts, .beginFromCurrentState]) {
+            self.view.layoutIfNeeded()
+        }
+    }
 
     // MARK: - 加载
 
