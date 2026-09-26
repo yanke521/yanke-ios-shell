@@ -1,6 +1,7 @@
 import UIKit
 import WebKit
 import Network
+import AudioToolbox
 
 /// 言克 app 的原生壳。
 ///
@@ -57,6 +58,24 @@ final class WebViewController: UIViewController {
             injectionTime: .atDocumentStart,
             forMainFrameOnly: true)
         config.userContentController.addUserScript(flag)
+
+        /* 震动（v1.7，2026-09-26 言言：「套壳 app 还是做不了手机震动吗」）。
+           iOS 的 WebKit 压根没有 navigator.vibrate，前端那 9 处震动（点按钮、长按、
+           扭蛋、计时器响…）在壳里一直是哑的，`if(navigator.vibrate)` 直接跳过，不报错。
+           这里在 documentStart 给它补一个同名函数，转给原生马达——**前端一行不用改**，
+           原来怎么调还怎么调。PWA/Safari 里没有这段，照旧是哑的。 */
+        let vibrate = WKUserScript(
+            source: """
+            if (!navigator.vibrate) navigator.vibrate = function (p) {
+              try { window.webkit.messageHandlers.haptic.postMessage(
+                      Array.isArray(p) ? p.map(Number) : [Number(p) || 0]); } catch (e) {}
+              return true;
+            };
+            """,
+            injectionTime: .atDocumentStart,
+            forMainFrameOnly: true)
+        config.userContentController.addUserScript(vibrate)
+        config.userContentController.add(HapticHandler(), name: "haptic")
 
         // UA 尾巴加个标识，服务端想区分来源时不用猜（系统 UA 其余部分保留）
         config.applicationNameForUserAgent = "YanKeApp/\(ver)"
@@ -366,6 +385,51 @@ extension WebViewController: WKUIDelegate {
             completionHandler(ac.textFields?.first?.text)
         })
         present(ac, animated: true)
+    }
+}
+
+// MARK: - 震动
+
+/// 把 navigator.vibrate 的毫秒数翻译成 iPhone 的触感。
+///
+/// iPhone 没有「震 N 毫秒」这种接口，只有几档现成的手感，所以按时长分档：
+/// - ≤ 8ms：选择反馈（最轻，像滚轮拨一格）—— 前端给所有按钮挂的就是 6ms
+/// - ≤ 20ms：轻击；≤ 60ms：中击；≤ 140ms：重击
+/// - 更长的（计时器响那种 200ms）：真马达长震，Taptic 那几档太短表达不了「响了」
+/// 数组 [震, 停, 震, 停…] 按偶数位震、奇数位等，照原样排时间。
+///
+/// ⚠ 单独一个类、不让 WebViewController 自己当 handler：userContentController
+///   会强持有 handler，拿 self 就是循环引用，控制器永远不释放。
+private final class HapticHandler: NSObject, WKScriptMessageHandler {
+    private let selection = UISelectionFeedbackGenerator()
+    private let light = UIImpactFeedbackGenerator(style: .light)
+    private let medium = UIImpactFeedbackGenerator(style: .medium)
+    private let heavy = UIImpactFeedbackGenerator(style: .heavy)
+
+    func userContentController(_ controller: WKUserContentController,
+                               didReceive message: WKScriptMessage) {
+        guard let raw = message.body as? [Any] else { return }
+        let pattern = raw.compactMap { ($0 as? NSNumber)?.doubleValue }
+        var at = 0.0
+        for (i, ms) in pattern.enumerated() where ms > 0 {
+            if i % 2 == 0 {
+                let delay = at / 1000
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    self?.buzz(ms)
+                }
+            }
+            at += ms
+        }
+    }
+
+    private func buzz(_ ms: Double) {
+        switch ms {
+        case ..<9:    selection.selectionChanged()
+        case ..<21:   light.impactOccurred()
+        case ..<61:   medium.impactOccurred()
+        case ..<141:  heavy.impactOccurred()
+        default:      AudioServicesPlaySystemSound(kSystemSoundID_Vibrate)
+        }
     }
 }
 
