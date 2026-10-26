@@ -310,6 +310,42 @@ extension WebViewController: WKNavigationDelegate {
         }
     }
 
+    /// 首页回 404 ＝ 门口那道 yk_auth 没过（v2.1）。
+    ///
+    /// 换签名（全能签 → 自己的 Apple ID）得先删旧 app，新装的是空容器、cookie 全没了；
+    /// 壳又没有地址栏，原来那条 /gate?k= 链接无处可开 —— 装完就是个永久 404。
+    /// 钥匙不能打进包里（仓库是公开的），所以问她要：粘贴那条链接，或者只粘 k 后面那串都行。
+    func webView(_ webView: WKWebView,
+                 decidePolicyFor navigationResponse: WKNavigationResponse,
+                 decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void) {
+        if navigationResponse.isForMainFrame,
+           let r = navigationResponse.response as? HTTPURLResponse,
+           r.statusCode == 404, r.url?.host == Self.homeURL.host,
+           ["", "/", "/gate"].contains(r.url?.path ?? "") {   // /gate 也 404 ＝ 粘错了，再问一次
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in self?.askGateKey() }
+        }
+        decisionHandler(.allow)
+    }
+
+    private func askGateKey() {
+        guard presentedViewController == nil else { return }
+        let ac = UIAlertController(title: "进门",
+                                   message: "把登录链接粘贴进来（yanke521.xyz/gate?k=… 那条）",
+                                   preferredStyle: .alert)
+        ac.addTextField { $0.placeholder = "粘贴链接"; $0.clearButtonMode = .whileEditing }
+        ac.addAction(UIAlertAction(title: "进去", style: .default) { [weak self] _ in
+            guard let self else { return }
+            var t = (ac.textFields?.first?.text ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            if let r = t.range(of: "k=") { t = String(t[r.upperBound...]) }
+            t = String(t.prefix { $0.isLetter || $0.isNumber || $0 == "-" || $0 == "_" })
+            guard !t.isEmpty, let url = URL(string: "https://yanke521.xyz/gate?k=" + t) else {
+                self.askGateKey(); return
+            }
+            self.webView.load(URLRequest(url: url))
+        })
+        present(ac, animated: true)
+    }
+
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         errorView.isHidden = true
         // KVO 负责「她在 app 里切主题」那种没有导航的变化；这一下负责首屏。
