@@ -72,6 +72,15 @@
 	     壳这边——网页那侧无论怎么写都没用，缺了这条是**静默失败**（回调根本不触发，
 	     不报错也不弹窗）。不需要任何 entitlement，共享企业证书也能用。
 	     「不开 app 也上报位置」是另一回事，那要写原生 CoreLocation + 后台模式。 -->
+	<!-- 克打电话来（v2.0，2026-10-26）：audio = 后台放静音不被挂起、挂着长轮询等电话；
+	     voip = CallKit 弹系统来电界面。两个都只是 plist 声明、不要 entitlement，七天自签能用。
+	     ⚠ 没有 PushKit（那要 $99 账号），所以她把 app 从后台划掉就收不到了。 -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>audio</string>
+		<string>voip</string>
+	</array>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>把你此刻在哪告诉克</string>
 </dict>

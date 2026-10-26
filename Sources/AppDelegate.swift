@@ -9,6 +9,8 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
                      didFinishLaunchingWithOptions launchOptions:
                      [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         configureAudio()
+        // 后台放静音不被挂起，好在后台等克的电话（v2.0，见 CallBridge.swift）
+        KeepAlive.shared.start()
         let w = UIWindow(frame: UIScreen.main.bounds)
         w.rootViewController = WebViewController()
         // 窗口底色 = 首屏背景色。壳启动到网页画出来之间有几百毫秒，

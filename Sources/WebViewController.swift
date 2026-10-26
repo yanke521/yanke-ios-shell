@@ -141,6 +141,9 @@ final class WebViewController: UIViewController {
         takeOverKeyboard()
         loadHome()
         startNetworkWatch()
+        // 克打电话来 → 系统来电界面（v2.0，见 CallBridge.swift）
+        CallBridge.shared.webView = webView
+        CallBridge.shared.start()
         NotificationCenter.default.addObserver(
             self, selector: #selector(appDidBecomeActive),
             name: UIApplication.didBecomeActiveNotification, object: nil)
@@ -259,6 +262,8 @@ final class WebViewController: UIViewController {
         if webView.url == nil {
             loadHome()
         }
+        KeepAlive.shared.start()
+        CallBridge.shared.appDidBecomeActive()
     }
 
     // MARK: - 主题色 → 状态栏
@@ -311,6 +316,7 @@ extension WebViewController: WKNavigationDelegate {
         // 两条都留着：只靠 KVO 的话，万一它对 themeColor 不触发，
         // 首屏状态栏就一直是错的，而这种错很难一眼看出来是哪儿的问题。
         applyThemeColor(webView.themeColor)
+        CallBridge.shared.webDidFinish()
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!,
