@@ -17,12 +17,19 @@
       "tintColor": "B8A088",
       "category": "lifestyle",
       "screenshotURLs": [],
-      "version": "2.2",
-      "versionDate": "2026-10-27T02:02:23Z",
-      "versionDescription": "桌面小组件：克的心情和碎碎念。重签时弹「App Contains Extensions」要选 Keep App Extensions (Register App ID for Each Extension)，别选 Remove。加好小组件后长按→编辑小组件，粘贴登录链接。",
-      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.2/YanKe-unsigned.ipa",
-      "size": 2500251,
+      "version": "2.2.1",
+      "versionDate": "2026-10-27T02:16:16Z",
+      "versionDescription": "桌面小组件：克的心情和碎碎念。修了 SideStore 装不上（苹果不收中文 App ID 名）。重签时弹「App Contains Extensions」选 Keep App Extensions (Register App ID for Each Extension)。",
+      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.2.1/YanKe-unsigned.ipa",
+      "size": 2503381,
       "versions": [
+        {
+          "version": "2.2.1",
+          "date": "2026-10-27T02:16:16Z",
+          "localizedDescription": "桌面小组件：克的心情和碎碎念。修了 SideStore 装不上（苹果不收中文 App ID 名）。重签时弹「App Contains Extensions」选 Keep App Extensions (Register App ID for Each Extension)。",
+          "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.2.1/YanKe-unsigned.ipa",
+          "size": 2503381
+        },
         {
           "version": "2.2",
           "date": "2026-10-27T02:02:23Z",
