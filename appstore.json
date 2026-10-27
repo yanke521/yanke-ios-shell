@@ -17,12 +17,19 @@
       "tintColor": "B8A088",
       "category": "lifestyle",
       "screenshotURLs": [],
-      "version": "2.4",
-      "versionDate": "2026-10-27T03:01:36Z",
-      "versionDescription": "系统控件换成 iOS 26 液态玻璃（长按菜单、弹框、分享面板、选照片）。",
-      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.4/YanKe-unsigned.ipa",
-      "size": 2269302,
+      "version": "2.5",
+      "versionDate": "2026-10-27T07:45:06Z",
+      "versionDescription": "小组件的样子你自己改：言克 → 设置 → 小组件，能换背景图、调雾和字色、关掉不要的那几块，不用再重装。",
+      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5/YanKe-unsigned.ipa",
+      "size": 2291451,
       "versions": [
+        {
+          "version": "2.5",
+          "date": "2026-10-27T07:45:06Z",
+          "localizedDescription": "小组件的样子你自己改：言克 → 设置 → 小组件，能换背景图、调雾和字色、关掉不要的那几块，不用再重装。",
+          "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5/YanKe-unsigned.ipa",
+          "size": 2291451
+        },
         {
           "version": "2.4",
           "date": "2026-10-27T03:01:36Z",
