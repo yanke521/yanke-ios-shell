@@ -4,8 +4,11 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>zh_CN</string>
+	<!-- ⚠ 这里必须是英文（10-27）：SideStore 拿 Info.plist 原始的 CFBundleDisplayName 当 App ID 名字去苹果后台注册，
+	     苹果不收中文，报 DeveloperPortalError 10「invalid value '言克' for appIdName」。
+	     桌面上显示的「言克」走 *.lproj/InfoPlist.strings 本地化，系统读的是那份。 -->
 	<key>CFBundleDisplayName</key>
-	<string>言克</string>
+	<string>YanKeWidget</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
