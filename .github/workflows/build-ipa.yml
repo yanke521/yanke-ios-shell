@@ -23,8 +23,11 @@ jobs:
     # ≈ 200 macOS 分钟，一次构建 3~5 分钟，够用几十次）。
     # 想换更新的镜像把这行改成 macos-26 即可。
     # macos-26 带 Xcode 26（iOS 26 SDK）：拿旧 SDK 编出来的包，iOS 26 一律按旧样子画系统控件，
-    # 长按菜单/弹框/分享面板都没有液态玻璃（v2.4 换的就是这个）
-    runs-on: macos-26
+    # 长按菜单/弹框/分享面板都没有液态玻璃（v2.4 换的就是这个）。
+    # ⚠ 10-27 退回 macos-15（Xcode 16）：换 Xcode 26 之后 2.4、2.5 在她手机上 SideStore 都装不上
+    #   （Failed to install IPA, Socket(Kind(ConnectionReset))，包是完整下下来的），而 Xcode 16
+    #   打的 2.3 装得上。2.5.1 拿旧 Xcode 打来验证是不是它；是的话液态玻璃先不要了。
+    runs-on: macos-15
     timeout-minutes: 20
 
     steps:
