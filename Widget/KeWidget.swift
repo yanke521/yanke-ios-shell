@@ -24,6 +24,8 @@ struct Payload: Codable {
     let mood: [Mood]
     let intent: String?
     let murmurs: [Murmur]
+    /// v2.3 起才有；旧缓存里没这个字段，解码不能因此失败
+    let pose: String?
 }
 
 struct KeEntry: TimelineEntry {
@@ -35,7 +37,8 @@ struct KeEntry: TimelineEntry {
 private let sample = Payload(
     mood: [Mood(label: "惦记", score: 0.42), Mood(label: "护她", score: 0.32)],
     intent: "我在惦记她",
-    murmurs: [Murmur(time: nil, text: "她在干嘛"), Murmur(time: nil, text: "有点想蹭她")])
+    murmurs: [Murmur(time: nil, text: "她在干嘛"), Murmur(time: nil, text: "有点想蹭她")],
+    pose: "peek")
 
 /// 只认 k 后面那串（跟壳里 askGateKey 同一个取法）。
 private func parseKey(_ raw: String?) -> String? {
@@ -153,18 +156,29 @@ struct KeWidgetView: View {
                 Text(p.murmurs.first?.text ?? p.intent ?? "").font(.caption).lineLimit(2)
             }
         case .systemSmall:
-            VStack(alignment: .leading, spacing: 8) {
-                MoodLine(p: p)
-                if let m = p.murmurs.first {
-                    Text(m.text).font(.footnote).lineLimit(3)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .top) {
+                    MoodLine(p: p)
+                    Spacer(minLength: 0)
                 }
                 Spacer(minLength: 0)
+                HStack(alignment: .bottom, spacing: 6) {
+                    if let m = p.murmurs.first {
+                        Text(m.text).font(.caption).lineLimit(3)
+                    }
+                    Spacer(minLength: 0)
+                    FoxView(pose: p.pose ?? "idle", size: 44)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         default:
             let n = family == .systemLarge ? 3 : 2
             VStack(alignment: .leading, spacing: 10) {
-                MoodLine(p: p)
+                HStack(alignment: .center, spacing: 12) {
+                    FoxView(pose: p.pose ?? "idle", size: family == .systemLarge ? 72 : 52)
+                    MoodLine(p: p)
+                    Spacer(minLength: 0)
+                }
                 Divider()
                 Text("碎碎念").font(.caption2).foregroundStyle(.secondary)
                 ForEach(Array(p.murmurs.prefix(n).enumerated()), id: \.offset) { _, m in
@@ -190,5 +204,8 @@ struct KeWidget: Widget {
 
 @main
 struct KeWidgetBundle: WidgetBundle {
-    var body: some Widget { KeWidget() }
+    var body: some Widget {
+        KeWidget()
+        FoxLiveActivity()
+    }
 }

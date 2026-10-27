@@ -1,5 +1,6 @@
 import UIKit
 import WebKit
+import ObjectiveC
 import Network
 import AudioToolbox
 
@@ -144,6 +145,9 @@ final class WebViewController: UIViewController {
         // 克打电话来 → 系统来电界面（v2.0，见 CallBridge.swift）
         CallBridge.shared.webView = webView
         CallBridge.shared.start()
+        FoxIsland.shared.webView = webView
+        FoxIsland.shared.start()
+        hideKeyboardBar(webView)
         NotificationCenter.default.addObserver(
             self, selector: #selector(appDidBecomeActive),
             name: UIApplication.didBecomeActiveNotification, object: nil)
@@ -264,6 +268,7 @@ final class WebViewController: UIViewController {
         }
         KeepAlive.shared.start()
         CallBridge.shared.appDidBecomeActive()
+        FoxIsland.shared.appDidBecomeActive()
     }
 
     // MARK: - 主题色 → 状态栏
@@ -535,4 +540,27 @@ private extension UIColor {
         guard getRed(&r, green: &g, blue: &b, alpha: &a) else { return false }
         return (0.299 * r + 0.587 * g + 0.114 * b) < 0.6
     }
+}
+
+/// 键盘上面那条「⌃ ⌄ 完成」（v2.3）。那是 WKWebView 给网页表单配的，原生聊天 app 都没有——
+/// 一弹键盘就多出一截灰条，是「这是个网页」最显眼的那一下。
+/// 系统没给开关：WKWebView 的输入框住在一个私有的 WKContentView 里，键盘问它要 inputAccessoryView，
+/// 这里现场给那个类派生一个子类、把这个方法改成返回 nil，再把实例换成子类。不碰私有 API 的名字。
+func hideKeyboardBar(_ webView: WKWebView) {
+    guard let content = webView.scrollView.subviews.first(where: {
+        String(describing: type(of: $0)).hasPrefix("WKContent")
+    }) else { return }
+    let cls: AnyClass = type(of: content)
+    let name = "\(cls)_YKNoBar"
+    var sub: AnyClass? = NSClassFromString(name)
+    if sub == nil, let made = objc_allocateClassPair(cls, name, 0) {
+        let sel = #selector(getter: UIResponder.inputAccessoryView)
+        let block: @convention(block) (AnyObject) -> AnyObject? = { _ in nil }
+        if let m = class_getInstanceMethod(UIResponder.self, sel) {
+            class_addMethod(made, sel, imp_implementationWithBlock(block), method_getTypeEncoding(m))
+        }
+        objc_registerClassPair(made)
+        sub = made
+    }
+    if let sub { object_setClass(content, sub) }
 }

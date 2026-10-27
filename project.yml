@@ -25,8 +25,8 @@ settings:
     #   里面直接写死了版本号，跟这儿毫无关系——改这边一点用都没有，得两个文件各改一遍。
     #   v1.4 就是这么漏的（tag 打了 v1.4，装上去报 1.3）。现在 Info.plist 换成了
     #   $(MARKETING_VERSION) / $(CURRENT_PROJECT_VERSION) 占位符，**这儿才是唯一真相**。
-    MARKETING_VERSION: "2.2.1"
-    CURRENT_PROJECT_VERSION: "13"
+    MARKETING_VERSION: "2.3"
+    CURRENT_PROJECT_VERSION: "14"
     SWIFT_VERSION: "5.0"
     TARGETED_DEVICE_FAMILY: "1"          # 只做 iPhone
     ENABLE_USER_SCRIPT_SANDBOXING: YES
@@ -43,6 +43,7 @@ targets:
     platform: iOS
     sources:
       - path: Sources
+      - path: Shared          # FoxAttributes：壳和小组件必须是同一份（两边各写一份＝灵动岛只剩转圈）
       - path: Resources
         excludes:
           - "Info.plist"          # 由 INFOPLIST_FILE 指定，别再当资源打一份进去
@@ -66,9 +67,10 @@ targets:
     platform: iOS
     deploymentTarget: "17.0"
     sources:
-      - path: Widget
+      - path: Widget          # Fox/ 里的狐狸 png 也在这儿——图必须进小组件的包，放壳那边它找不到
         excludes:
           - "Info.plist"
+      - path: Shared
     dependencies:
       - sdk: WidgetKit.framework
       - sdk: SwiftUI.framework

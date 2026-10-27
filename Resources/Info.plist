@@ -78,6 +78,9 @@
 	<!-- 克打电话来（v2.0，2026-10-26）：audio = 后台放静音不被挂起、挂着长轮询等电话；
 	     voip = CallKit 弹系统来电界面。两个都只是 plist 声明、不要 entitlement，七天自签能用。
 	     ⚠ 没有 PushKit（那要 $99 账号），所以她把 app 从后台划掉就收不到了。 -->
+	<!-- 灵动岛小狐狸（v2.3）。漏了这条 Activity.request 直接抛错，而且错误信息不说缺的是它 -->
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>
