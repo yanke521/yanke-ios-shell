@@ -17,12 +17,19 @@
       "tintColor": "B8A088",
       "category": "lifestyle",
       "screenshotURLs": [],
-      "version": "2.3",
-      "versionDate": "2026-10-27T02:36:51Z",
-      "versionDescription": "灵动岛小狐狸（按克的心情换姿势）；桌面小组件也有狐狸；键盘上那条网页工具栏去掉了；他的回复到了轻震一下；图标换成深底。",
-      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.3/YanKe-unsigned.ipa",
-      "size": 2268076,
+      "version": "2.4",
+      "versionDate": "2026-10-27T03:01:36Z",
+      "versionDescription": "系统控件换成 iOS 26 液态玻璃（长按菜单、弹框、分享面板、选照片）。",
+      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.4/YanKe-unsigned.ipa",
+      "size": 2269302,
       "versions": [
+        {
+          "version": "2.4",
+          "date": "2026-10-27T03:01:36Z",
+          "localizedDescription": "系统控件换成 iOS 26 液态玻璃（长按菜单、弹框、分享面板、选照片）。",
+          "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.4/YanKe-unsigned.ipa",
+          "size": 2269302
+        },
         {
           "version": "2.3",
           "date": "2026-10-27T02:36:51Z",
