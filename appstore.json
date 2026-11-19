@@ -17,12 +17,19 @@
       "tintColor": "B8A088",
       "category": "lifestyle",
       "screenshotURLs": [],
-      "version": "2.5.1",
-      "versionDate": "2026-10-27T08:03:15Z",
-      "versionDescription": "跟 2.5 一样（小组件样子在设置里自己改），换回旧版 Xcode 打包，试试装不装得上。",
-      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5.1/YanKe-unsigned.ipa",
-      "size": 2292652,
+      "version": "2.5.3",
+      "versionDate": "2026-11-19T02:03:22Z",
+      "versionDescription": "锁屏小组件新增随克的状态变化的双铃铛，下方显示心情和碎碎念。",
+      "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5.3/YanKe-unsigned.ipa",
+      "size": 2348673,
       "versions": [
+        {
+          "version": "2.5.3",
+          "date": "2026-11-19T02:03:22Z",
+          "localizedDescription": "锁屏小组件新增随克的状态变化的双铃铛，下方显示心情和碎碎念。",
+          "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5.3/YanKe-unsigned.ipa",
+          "size": 2348673
+        },
         {
           "version": "2.5.1",
           "date": "2026-10-27T08:03:15Z",
