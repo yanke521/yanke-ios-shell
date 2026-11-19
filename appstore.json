@@ -21,14 +21,14 @@
       "versionDate": "2026-11-19T02:03:22Z",
       "versionDescription": "锁屏小组件新增随克的状态变化的双铃铛，下方显示心情和碎碎念。",
       "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5.3/YanKe-unsigned.ipa",
-      "size": 2348673,
+      "size": 2348672,
       "versions": [
         {
           "version": "2.5.3",
           "date": "2026-11-19T02:03:22Z",
           "localizedDescription": "锁屏小组件新增随克的状态变化的双铃铛，下方显示心情和碎碎念。",
           "downloadURL": "https://github.com/yanke521/yanke-ios-shell/releases/download/v2.5.3/YanKe-unsigned.ipa",
-          "size": 2348673
+          "size": 2348672
         },
         {
           "version": "2.5.1",
