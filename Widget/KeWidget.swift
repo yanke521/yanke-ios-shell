@@ -262,11 +262,17 @@ struct KeWidgetView: View {
     private func content(_ p: Payload, _ look: Look) -> some View {
         switch family {
         case .accessoryRectangular:
-            // 锁屏那格系统统一染色，样子设置管不到，照旧
-            VStack(alignment: .leading, spacing: 1) {
-                Text(p.mood.first?.label ?? "克").font(.headline)
-                Text(p.murmurs.first?.text ?? p.intent ?? "").font(.caption).lineLimit(2)
+            HStack(spacing: 5) {
+                FoxView(pose: p.pose ?? "idle", size: 32)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(p.mood.first?.label ?? "克")
+                        .font(.headline).lineLimit(1)
+                    Text(p.murmurs.first?.text ?? p.intent ?? "")
+                        .font(.caption).lineLimit(2)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         case .systemSmall:
             VStack(alignment: .leading, spacing: 6) {
                 if look.mood {
