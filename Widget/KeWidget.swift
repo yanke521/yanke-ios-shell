@@ -262,17 +262,20 @@ struct KeWidgetView: View {
     private func content(_ p: Payload, _ look: Look) -> some View {
         switch family {
         case .accessoryRectangular:
-            HStack(spacing: 5) {
-                FoxView(pose: p.pose ?? "idle", size: 32)
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(p.mood.first?.label ?? "克")
-                        .font(.headline).lineLimit(1)
-                    Text(p.murmurs.first?.text ?? p.intent ?? "")
-                        .font(.caption).lineLimit(2)
+            VStack(alignment: .center, spacing: 0) {
+                let bells = UIImage(named: "bells_\(p.pose ?? "idle")") ?? UIImage(named: "bells_idle")
+                if let bells {
+                    Image(uiImage: bells)
+                        .renderingMode(.template)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 25)
+                        .accessibilityHidden(true)
                 }
+                Text(p.mood.first?.label ?? "克").font(.headline).lineLimit(1)
+                Text(p.murmurs.first?.text ?? p.intent ?? "").font(.caption2).lineLimit(1)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity)
         case .systemSmall:
             VStack(alignment: .leading, spacing: 6) {
                 if look.mood {

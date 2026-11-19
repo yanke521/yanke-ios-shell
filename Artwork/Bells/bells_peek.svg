@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 52" width="128" height="104">
+  <title>蝴蝶结双铃铛</title>
+  <g fill="#000">
+    <path d="M45 14q8-12 17 0-9 11-17 0Zm5 0a3 3 0 1 0 6 0 3 3 0 1 0-6 0Z"/>
+    <g stroke="#000" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round">
+      <path fill="none" d="M31 12C26 4 20 3 20 7s4 8 11 5Zm2 0c4-8 10-10 11-6s-4 9-11 6Z"/>
+      <g transform="rotate(22 26 22)">
+        <circle cx="26" cy="36" r="2.5"/>
+        <path fill="none" d="M17 31c3-3 2-8 3-12a6.2 6.2 0 0 1 12 0c1 4 0 9 3 12q-9 5-18 0Z"/>
+      </g>
+      <g transform="rotate(-22 39 23)">
+        <circle cx="39" cy="37" r="2.5"/>
+        <path d="M30 32c3-3 2-8 3-12a6.2 6.2 0 0 1 12 0c1 4 0 9 3 12q-9 5-18 0Z"/>
+      </g>
+      <circle cx="32" cy="12" r="1.8"/>
+    </g>
+  </g>
+</svg>
